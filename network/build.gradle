@@ -27,18 +27,44 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    namespace 'com.allinedelara.network'
 }
 
 dependencies {
     api(project(':core'))
+
+    // Core
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("androidx.core:core-ktx:1.9.0")
+
+    // Network
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.6.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation ("com.google.code.gson:gson:2.9.1")
+
+    // Unit tests
+    testImplementation("org.junit.platform:junit-platform-launcher:1.8.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    testImplementation("org.junit.vintage:junit-vintage-engine:5.8.2")
+    testImplementation("org.mockito:mockito-junit-jupiter:4.2.0")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
+    testImplementation("org.assertj:assertj-core:3.20.2")
+    testImplementation("com.github.xgouchet.Elmyr:core:1.3.1")
+    testImplementation("com.github.xgouchet.Elmyr:inject:1.3.1")
+    testImplementation("com.github.xgouchet.Elmyr:junit5:1.3.1")
+    testImplementation("com.github.xgouchet.Elmyr:jvm:1.3.1")
+
+    // Instrumented tests
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+}
+
+tasks.withType(Test.class).configureEach {
+    useJUnitPlatform {
+        includeEngines("junit-jupiter", "junit-vintage")
+    }
+    reports {
+        junitXml.required.set(true)
+        html.required.set(true)
+    }
 }

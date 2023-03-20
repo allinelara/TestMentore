@@ -38,15 +38,19 @@ abstract class RemoteDataSource <T,K> (val okHttpClient: OkHttpClient):DataSourc
         }
     }
 
-    private fun <O> handleResponse(response: Response?, parseResponse: (InputStream) -> O?): O?{
-        return if(response?.code==200){
-            val body = response.body
-            if(body !=null){
-                parseResponse(body.byteStream())
-            }else{
+    private fun <O> handleResponse(response: Response?, parseResponse: (InputStream) -> O?): O? {
+        return try {
+            if (response?.code == 200) {
+                val body = response.body
+                if (body != null) {
+                    parseResponse(body.byteStream())
+                } else {
+                    null
+                }
+            } else {
                 null
             }
-        }else{
+        }catch(e: Exception){
             null
         }
     }

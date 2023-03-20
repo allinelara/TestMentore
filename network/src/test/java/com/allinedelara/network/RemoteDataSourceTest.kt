@@ -16,7 +16,7 @@ class RemoteDataSourceTest{
     lateinit var mockSource: RemoteDataSource<String,String>
 
 
-    private fun mockResponse(statusCode: Int, message: String, body: ResponseBody): Response {
+    private fun mockResponse(statusCode: Int, message: String, body: ResponseBody?): Response {
         val fakeResponse = Response.Builder()
             .request(Request.Builder().url("https://test.com").get().build())
             .code(statusCode)
@@ -134,22 +134,32 @@ class RemoteDataSourceTest{
     }
 
     //write a test what happen with the parsing fail
-//    @org.junit.jupiter.api.Test
-//    fun testGetFailingParse(){
-//        //given
-//        val mockInputStream : InputStream = mock()
-//        val mockBuffer: BufferedSource = mock()
-//        whenever(mockBuffer.inputStream()).(mockInputStream)
-//        whenever(mockInputStream).doThrow(IOException())
-//
-//        //when
-//        val results = runBlocking {
-//            testedSource.parseList(mockInputStream)
-//        }
-//
-//        //then
-//        assertThat(results).isNull()
-//    }
+    @org.junit.jupiter.api.Test
+    fun testGetFailingParse(){
+        //given
+       whenever(mockSource.parseList(any())).doThrow(java.lang.RuntimeException())
+        val fakeURl = "https://test.com/"
+        val mockInputStream : InputStream = mock()
+        val mockBody = mock<ResponseBody>()
+        val mockBuffer: BufferedSource = mock()
+        val mockResponse = mockResponse(200, "test",mockBody )
+        val mockCall : Call = mock()
+        whenever(mockSource.getUrlList()).doReturn(fakeURl)
+        whenever(mockBody.source()).doReturn(mockBuffer)
+        whenever(mockBuffer.inputStream()).doReturn(mockInputStream)
+        whenever(mockHttpClient.newCall(argThat{
+            this.url.toString() == fakeURl
+        })).doReturn(mockCall)
+        whenever(mockCall.execute()).doReturn(mockResponse)
+
+        //when
+        val results = runBlocking {
+            testedSource.getAll()
+        }
+
+        //then
+        assertThat(results).isEmpty()
+    }
 
     @org.junit.jupiter.api.Test
     fun testGetAll(){
@@ -220,6 +230,26 @@ class RemoteDataSourceTest{
         whenever(mockCall.execute()).doReturn(mockResponse)
         whenever(mockCall.execute().code == 400).doThrow(IOException())
 
+
+        //when
+        val results = runBlocking {
+            testedSource.getAll()
+        }
+
+        //then
+        assertThat(results).isEqualTo(emptyList<String>())
+    }
+    @org.junit.jupiter.api.Test
+    fun handleResponseWithNullBody(){
+        //given
+        val fakeURl = "https://test.com/"
+        val mockResponse = mockResponse(200, "test", null )
+        val mockCall : Call = mock()
+        whenever(mockSource.getUrlList()).doReturn(fakeURl)
+        whenever(mockHttpClient.newCall(argThat{
+            this.url.toString() == fakeURl
+        })).doReturn(mockCall)
+        whenever(mockCall.execute()).doReturn(mockResponse)
 
         //when
         val results = runBlocking {
